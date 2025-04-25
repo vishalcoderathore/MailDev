@@ -1,27 +1,21 @@
-var builder = WebApplication.CreateBuilder(args);
+using MailKit.Net.Smtp;
+using MimeKit;
+using MimeKit.Text;
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+var message = new MimeMessage();
+var from = new MailboxAddress("Alice", "alice@example.com");
+message.From.Add(from);
+var to = new MailboxAddress("Bob", "bob@example.com");
+message.To.Add(to);
+message.Subject = "Hi Bob!";
 
-var app = builder.Build();
+var bb = new BodyBuilder();
+bb.TextBody = "Hi Bob in plain text.";
+bb.HtmlBody = "<p>Hi Bob in HTML.</p>";
+message.Body = bb.ToMessageBody();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.Run();
+using var smtp = new SmtpClient();
+await smtp.ConnectAsync("localhost", 1025, false);
+await smtp.SendAsync(message);
+await smtp.DisconnectAsync(true);
+Console.WriteLine($"Mail sent to {to.Address}");
