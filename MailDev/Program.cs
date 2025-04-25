@@ -10,6 +10,8 @@ message.To.Add(to);
 message.Subject = "Hi Bob!";
 
 var bb = new BodyBuilder();
+
+bb.Attachments.Add("./assets/hero.png");
 bb.TextBody = "Hi Bob in plain text.";
 bb.HtmlBody = "<p>Hi Bob in HTML.</p>";
 message.Body = bb.ToMessageBody();
